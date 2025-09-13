@@ -26,8 +26,8 @@ function App() {
           <Route path="/signup" element={<SignUp />} />
         </Routes>
       </main>
-      <Chatbot />
       <Footer />
+      <Chatbot />
     </div>
   );
 }
