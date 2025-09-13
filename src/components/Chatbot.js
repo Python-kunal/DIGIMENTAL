@@ -1,7 +1,7 @@
 import React, { useRef, useState, useEffect } from "react";
 import "./Chatbot.css";
 
-// Simple responses and resources (customize as needed)
+// Simple responses and resources
 const responses = {
   "hi": "Hello! How can I support you today?",
   "hello": "Hi there! How are you feeling?",
@@ -63,6 +63,7 @@ export default function Chatbot() {
   ]);
   const [input, setInput] = useState("");
   const [typing, setTyping] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
   const chatRef = useRef(null);
 
   useEffect(() => {
@@ -91,21 +92,48 @@ export default function Chatbot() {
     if (e.key === "Enter") handleSend(input);
   };
 
+  const handleExit = () => {
+    console.log("Exit clicked, isOpen before:", isOpen); // Debug
+    setIsOpen(false); // Update state
+    const container = document.querySelector('.chatbot-container');
+    if (container) {
+      container.classList.remove('active');
+      container.style.display = 'none'; // Force close
+    }
+  };
+
+  const toggleChat = () => {
+    setIsOpen(!isOpen);
+    const container = document.querySelector('.chatbot-container');
+    if (container) {
+      container.classList.toggle('active');
+      container.style.display = isOpen ? 'none' : 'flex'; // Toggle display
+    }
+  };
+
   return (
-    <div className="chatbot-container">
-      <div className="chatbot-header">
-        <div className="status-indicator"></div>
-        <h2>MindCare Assistant</h2>
-        <p>Your Mental Health Support Companion</p>
-      </div>
-      <div className="chat-messages" ref={chatRef}>
-        {messages.map((m, i) => (
-          <div className={`message ${m.sender}`} key={i}>
-            <div className={`avatar ${m.sender === "bot" ? "bot-avatar" : "user-avatar"}`}>
-              {m.sender === "bot" ? "MC" : "You"}
+    <>
+      <button className="floating-chat-button" onClick={toggleChat}>
+        💬
+      </button>
+      <div className={`chatbot-container ${isOpen ? "active" : ""}`}>
+        <div className="chatbot-header">
+          <div className="header-content">
+            <div className="status-indicator"></div>
+            <div>
+              <h2>MindCare Assistant</h2>
+              <p>Your Mental Health Support Companion</p>
             </div>
-            <div className="message-bubble">
-              <span dangerouslySetInnerHTML={{ __html: m.text }} />
+          </div>
+          <button className="exit-button" onClick={handleExit}>×</button>
+        </div>
+        <div className="chat-messages" ref={chatRef}>
+          {messages.map((m, i) => (
+            <div className={`message ${m.sender}`} key={i}>
+              <div className={`avatar ${m.sender === "bot" ? "bot-avatar" : "user-avatar"}`}>
+                {m.sender === "bot" ? "MC" : "You"}
+              </div>
+              <div className="message-bubble">{m.text}</div>
               {m.quick && (
                 <div className="quick-responses">
                   <button className="quick-response" onClick={() => handleQuick("I'm feeling stressed")}>Feeling Stressed</button>
@@ -115,39 +143,28 @@ export default function Chatbot() {
                 </div>
               )}
             </div>
-          </div>
-        ))}
-        {typing && (
-          <div className="typing-indicator">
-            <div className="message bot">
-              <div className="avatar bot-avatar">MC</div>
-              <div className="message-bubble">
-                <div className="typing-dots">
-                  <div className="typing-dot"></div>
-                  <div className="typing-dot"></div>
-                  <div className="typing-dot"></div>
-                </div>
+          ))}
+          {typing && (
+            <div className="typing-indicator">
+              <div className="message bot">
+                <div className="avatar bot-avatar">MC</div>
+                <div className="message-bubble">...</div>
               </div>
             </div>
-          </div>
-        )}
+          )}
+        </div>
+        <div className="input-container">
+          <input
+            type="text"
+            className="message-input"
+            placeholder="Type your message..."
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyDown={handleKeyDown}
+          />
+          <button className="send-button" onClick={() => handleSend(input)}>Send</button>
+        </div>
       </div>
-      <div className="input-container">
-        <input
-          type="text"
-          className="message-input"
-          placeholder="Type your message..."
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          onKeyDown={handleKeyDown}
-        />
-        <button className="send-button" onClick={() => handleSend(input)}>
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <line x1="22" y1="2" x2="11" y2="13"></line>
-            <polygon points="22,2 15,22 11,13 2,9"></polygon>
-          </svg>
-        </button>
-      </div>
-    </div>
+    </>
   );
 }
